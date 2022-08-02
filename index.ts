@@ -155,6 +155,7 @@ class AudioRecorderPlayer {
   private _hasPausedRecord: boolean;
   private _recorderSubscription: EmitterSubscription;
   private _playerSubscription: EmitterSubscription;
+  private _deviceConnectionSubscription: EmitterSubscription;
   private _playerCallback: (event: PlayBackType) => void;
 
   mmss = (secs: number): string => {
@@ -206,6 +207,8 @@ class AudioRecorderPlayer {
     if (this._recorderSubscription) {
       this._recorderSubscription.remove();
       this._recorderSubscription = null;
+      this._deviceConnectionSubscription.remove();
+      this._deviceConnectionSubscription = null;
     }
   };
 
@@ -427,14 +430,14 @@ class AudioRecorderPlayer {
    */
   onDeviceConnected = (callback: (isConnected: boolean) => void): void => {
     if (Platform.OS === 'android') {
-      this._recorderSubscription = DeviceEventEmitter.addListener(
+      this._deviceConnectionSubscription = DeviceEventEmitter.addListener(
         'onDeviceConnected',
         callback,
       );
     } else {
       const myModuleEvt = new NativeEventEmitter(RNAudioRecorderPlayer);
 
-      this._recorderSubscription = myModuleEvt.addListener(
+      this._deviceConnectionSubscription = myModuleEvt.addListener(
         'onDeviceConnected',
         callback,
       );
