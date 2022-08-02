@@ -420,6 +420,26 @@ class AudioRecorderPlayer {
   setSubscriptionDuration = async (sec: number): Promise<string> => {
     return RNAudioRecorderPlayer.setSubscriptionDuration(sec);
   };
+
+  /**
+   * Set listener from native module for device connected.
+   * @returns {callBack((e: boolean): void)}
+   */
+  onDeviceConnected = (callback: (isConnected: boolean) => void): void => {
+    if (Platform.OS === 'android') {
+      this._recorderSubscription = DeviceEventEmitter.addListener(
+        'onDeviceConnected',
+        callback,
+      );
+    } else {
+      const myModuleEvt = new NativeEventEmitter(RNAudioRecorderPlayer);
+
+      this._recorderSubscription = myModuleEvt.addListener(
+        'onDeviceConnected',
+        callback,
+      );
+    }
+  };
 }
 
 export default AudioRecorderPlayer;

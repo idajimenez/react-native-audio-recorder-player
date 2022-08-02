@@ -32,7 +32,20 @@ class RNAudioRecorderPlayer: RCTEventEmitter, AVAudioRecorderDelegate {
     }
 
     override func supportedEvents() -> [String]! {
-        return ["rn-playback", "rn-recordback"]
+        return ["rn-playback", "rn-recordback", "onDeviceConnected"]
+    }
+
+    func isDeviceConnected() {
+        let numberOfChannels = audioSession.inputNumberOfChannels;
+        var isConnected: Bool = false;
+        
+        for desc in audioSession.currentRoute.inputs {
+            if numberOfChannels >= 2 && desc.portType.rawValue == AVAudioSession.Port.usbAudio.rawValue {
+                isConnected = true;
+            }
+        }
+        
+        sendEvent(withName: "onDeviceConnected", body: isConnected);
     }
 
     func setAudioFileURL(path: String) {
@@ -52,11 +65,13 @@ class RNAudioRecorderPlayer: RCTEventEmitter, AVAudioRecorderDelegate {
     @objc(updateRecorderProgress:)
     public func updateRecorderProgress(timer: Timer) -> Void {
         if (audioRecorder != nil) {
-            var currentMetering: Float = 0
+            var currentMetering: [Float] = []
 
             if (_meteringEnabled) {
                 audioRecorder.updateMeters()
-                currentMetering = audioRecorder.averagePower(forChannel: 0)
+                for val in 0...(audioSession.inputNumberOfChannels - 1) {
+                    currentMetering.append(audioRecorder.averagePower(forChannel: val));
+                }
             }
 
             let status = [
@@ -65,6 +80,7 @@ class RNAudioRecorderPlayer: RCTEventEmitter, AVAudioRecorderDelegate {
                 "currentMetering": currentMetering,
             ] as [String : Any];
 
+            self.isDeviceConnected();
             sendEvent(withName: "rn-recordback", body: status)
         }
     }
