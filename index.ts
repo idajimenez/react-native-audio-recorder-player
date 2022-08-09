@@ -206,9 +206,7 @@ class AudioRecorderPlayer {
   removeRecordBackListener = (): void => {
     if (this._recorderSubscription) {
       this._recorderSubscription.remove();
-      this._recorderSubscription = null;
       this._deviceConnectionSubscription.remove();
-      this._deviceConnectionSubscription = null;
     }
   };
 
